@@ -7,7 +7,7 @@ $(BIN):
 	mkdir -p $(BIN)
 
 build: $(BIN)
-	gcc `pkg-config --cflags gtk+-3.0` -o bin/Quarguar $(SOURCES) `pkg-config --libs gtk+-3.0`
+	gcc -lstdc++ `pkg-config --cflags gtk+-3.0` -o bin/Quarguar $(SOURCES) `pkg-config --libs gtk+-3.0` `pkg-config --libs --cflags cairo`
 
 run: $(BIN) build
 	bin/Quarguar

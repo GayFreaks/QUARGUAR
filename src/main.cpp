@@ -1,12 +1,48 @@
+#include <cairo.h>
 #include <gtk/gtk.h>
+#include <string>
+#include <iostream>
+#include <sstream>
+#include "qrcodegen.hpp"
+
+static std::string toSvgString(const qrcodegen::QrCode &qr, int border) {
+	if (border < 0)
+		throw std::domain_error("Border must be non-negative");
+	if (border > INT_MAX / 2 || border * 2 > INT_MAX - qr.getSize())
+		throw std::overflow_error("Border too large");
+	
+	std::ostringstream sb;
+	sb << "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n";
+	sb << "<!DOCTYPE svg PUBLIC \"-//W3C//DTD SVG 1.1//EN\" \"http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd\">\n";
+	sb << "<svg xmlns=\"http://www.w3.org/2000/svg\" version=\"1.1\" viewBox=\"0 0 ";
+	sb << (qr.getSize() + border * 2) << " " << (qr.getSize() + border * 2) << "\" stroke=\"none\">\n";
+	sb << "\t<rect width=\"100%\" height=\"100%\" fill=\"#FFFFFF\"/>\n";
+	sb << "\t<path d=\"";
+	for (int y = 0; y < qr.getSize(); y++) {
+		for (int x = 0; x < qr.getSize(); x++) {
+			if (qr.getModule(x, y)) {
+				if (x != 0 || y != 0)
+					sb << " ";
+				sb << "M" << (x + border) << "," << (y + border) << "h1v1h-1z";
+			}
+		}
+	}
+	sb << "\" fill=\"#000000\"/>\n";
+	sb << "</svg>\n";
+	return sb.str();
+}
 
 static void generate_qr(GtkWidget *widget, gpointer data) {
-    g_print ("Hello World\n");
+    qrcodegen::QrCode qr0 = qrcodegen::QrCode::encodeText("Hello, world!", qrcodegen::QrCode::Ecc::MEDIUM);
+    std::string svg = toSvgString(qr0, 4);  // See QrCodeGeneratorDemo
+    std::cout << svg << "\n";
 }
 
 static void save_qr(GtkWidget *widget, gpointer data) {
     g_print ("Hello World\n");
 }
+
+static cairo_surface_t *imageSurface;
 
 static void activate (GtkApplication *app, gpointer user_data) {
     GtkWidget *window;
@@ -29,7 +65,8 @@ static void activate (GtkApplication *app, gpointer user_data) {
     h_layout = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
 
     // Replace with surface later
-    frame = gtk_image_new();
+
+    frame = gtk_image_new_from_surface(imageSurface);
     gtk_widget_set_size_request(frame, 150, 150);
 
     v_layout = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
