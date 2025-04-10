@@ -38,7 +38,7 @@ static void activate (GtkApplication *app, gpointer user_data) {
 
     entry = gtk_entry_new();
     entryEntry = GTK_ENTRY(entry);
-    gtk_entry_set_text(entryEntry, "Data");
+    gtk_entry_set_text(entryEntry, "some data");
 
     button_box = gtk_button_box_new(GTK_ORIENTATION_HORIZONTAL);
     
